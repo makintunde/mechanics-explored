@@ -171,4 +171,5 @@ public class FrontEnd extends JFrame /*implements ActionListener, ItemListener*/
 		gui.setTitle("Mechanics Explored");
 		gui.setSize(420, 500);
 	}
+	
 }

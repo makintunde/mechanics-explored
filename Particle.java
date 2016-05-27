@@ -11,5 +11,4 @@ public class Particle {
 		int m = 0;			
 	}
 	
-
 }

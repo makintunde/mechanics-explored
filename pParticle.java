@@ -1,15 +1,15 @@
 
-public class pParticle extends Particle { //it's a type of particle
+public class pParticle extends Particle { 
 
 	int x = 0;
 	int y = 0;
 	int m = 0;	
-	int initY = 0; // initial y coordinate
-	float a = 0; // angle of projection
+	int initY = 0;  // Initial y coordinate
+	float a = 0;    // Angle of projection
 	float xAcc = 0; // x-component of acceleration
 	float yAcc = 0; // y-component of acceleration
-	float mVel = 0; // magnitude of velocity
-	float mAcc = 0; // magnitude of acceleration
+	float mVel = 0; // Magnitude of velocity
+	float mAcc = 0; // Magnitude of acceleration
 	float tof = 0;
 	boolean landed = false;
 	

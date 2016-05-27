@@ -69,7 +69,7 @@ public class Friction2 extends Canvas implements Runnable {
 		final TextField massField = new TextField(5);
 		
 		//create labels for height, angle and velocity entry
-		Label cofLabel = new Label("Enter coefficient of friction (µ):");		
+		Label cofLabel = new Label("Enter coefficient of friction (ï¿½):");		
 		Label velLabel = new Label("Enter velocity (v):");
 		Label angleLabel = new Label("Enter angle (a):");
 		Label massLabel = new Label("Enter mass (kg):");
@@ -329,4 +329,5 @@ public class Friction2 extends Canvas implements Runnable {
 		//create new AnimationObject
 		new Friction2();		
 	}
+	
 }

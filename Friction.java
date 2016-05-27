@@ -80,7 +80,7 @@ public class Friction extends Canvas implements Runnable {
 		//final TextField lengthField = new TextField(5);
 		
 		//create labels for height, angle and velocity entry. and for the error panel
-		Label cofLabel = new Label("Enter coefficient of friction (µ):");		
+		Label cofLabel = new Label("Enter coefficient of friction (mu):");		
 		Label angleLabel = new Label("Enter angle (a):");
 		Label massLabel = new Label("Enter mass (kg):");
 		//Label lengthLabel = new Label("Enter plane length (m):");
@@ -548,12 +548,11 @@ public class Friction extends Canvas implements Runnable {
 		g.drawString("(Weight) force down plane			: " + downStr + " N", textX, textY + 30);
 		g.drawString("Acceleration: " + accStr + " m/s/s", textX, textY + 45);
 		g.drawString("Velocity					: " + vStr + " m/s", textX, textY + 60); //increments of 15 px for even spacing
-
-		
 	}
 	
 	public static void main(String args[]) {
 		//create new Friction() Object
 		new Friction();		
 	}
+	
 }
