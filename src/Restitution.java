@@ -1,26 +1,15 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DecimalFormat;
 import java.util.Timer;
 
 import javax.swing.JOptionPane;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
 
 /*
  * Mechanics Explored - Restitution
- * Copyright (R) Michael Akintunde 2013
- * 
- *  updates: 11/03/13 
- * 	-	added "about" text function
- * 	-	changing data types from "double" to "float"
- *  -	Commenting clean-up
- *  -	Exception handling
- *  
- *  -   Complete overhaul of old code - now uses more OOP (17/03)
- * 								
+ * Copyright (R) Michael Akintunde 2013 								
  */
 
+@SuppressWarnings("serial")
 public class Restitution extends Canvas implements Runnable {
 			
 	//create a new planet with its own gravity and time.

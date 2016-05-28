@@ -3,6 +3,7 @@ import java.awt.event.*;		//For event handling
 import java.text.DecimalFormat; //For decimal formatting
 import javax.swing.BoxLayout;	//Layout manager
 import javax.swing.JOptionPane; //Used for dialogue boxes
+import static java.lang.Double.parseDouble;
 
 /*
  * Mechanics Explored - Friction
@@ -11,25 +12,26 @@ import javax.swing.JOptionPane; //Used for dialogue boxes
  * Latest updates: 07/03/13 
  * 	-	added velocity and acceleration functions
  * 	-	added "about" text function
- * 	-	changing "float" datatypes to "float"
+ * 	-	changing "double" datatypes to "double"
  */
 
+@SuppressWarnings("serial")
 public class Friction extends Canvas implements Runnable {	
 	
 	DecimalFormat twoDecPlaces = new DecimalFormat("0.00");
-	Planet earth = new Planet((float) 9.8);
+	Planet earth = new Planet(9.8);
 	
-	public float ay = 0; 		// Y component of acceleration - x component is negligible since constant
-	public float vy = 0; 		// Y component of velocity	
-	public float mv = 0; 		// Magnitude of velocity
-	public float aRough = 0; 	// "Raw" angle value
-	public float acc = 0; 		// Acceleration
-	public float absAcc = 0;
+	public double ay = 0; 		// Y component of acceleration - x component is negligible since constant
+	public double vy = 0; 		// Y component of velocity	
+	public double mv = 0; 		// Magnitude of velocity
+	public double aRough = 0; 	// "Raw" angle value
+	public double acc = 0; 		// Acceleration
+	public double absAcc = 0;
 	
 	//---------------IMPORTANT VARIBLES--------------------
-	public float cof = (float)0.5; 	// Coefficient of friction
-	public float a = 0;		// Angle of inclination
-	public float m = 0; 		// Mass
+	public double cof = (double)0.5; 	// Coefficient of friction
+	public double a = 0;		// Angle of inclination
+	public double m = 0; 		// Mass
 	//-----------------------------------------------------
 	
 	public int L = 500; 		// Length of "plank"
@@ -214,13 +216,13 @@ public class Friction extends Canvas implements Runnable {
 				
 				try{
 					//get coefficient of friction from user's input
-					cof = Float.parseFloat(cofField.getText());						
+					cof = parseDouble(cofField.getText());
 					
 					//get "rough" angle
-					aRough = Float.parseFloat(angleField.getText());
+					aRough = parseDouble(angleField.getText());
 					
 					//get mass from user's input value, use it as diameter of ball for visual representation
-					m = Float.parseFloat(massField.getText());		
+					m = parseDouble(massField.getText());		
 				}
 				catch(NumberFormatException ne){
 					JOptionPane.showMessageDialog(null, "Only numerical values are accepted.");
@@ -247,7 +249,7 @@ public class Friction extends Canvas implements Runnable {
 					} if (valueChecker(m, a, cof) == 3) {	
 						setDialog(cofErrStr, cofValStr, cofRecStr);	
 					
-					//float errors
+					//double errors
 					} if ((valueChecker(m, a, cof) == 1) && (valueChecker(m, a, cof) == 2) && !(valueChecker(m, a, cof) == 3)) {	
 						setDialog(massErrStr + "\n" + angleErrStr, 
 								massValStr + "\n" + angleValStr,
@@ -339,30 +341,30 @@ public class Friction extends Canvas implements Runnable {
 	
 	//used for calculation position of particle in the (x,y) plane
 	//named posUtah, as algorithm was inspired by University of Utah's description
-	public float posUtah (float T) {
-		float p = 0;
+	public double posUtah (double T) {
+		double p = 0;
 		if (earth.t < 0) {
 			//do nothing
 		} else if ((cof * Math.cos(a)) > (Math.sin(a))) {
 			//do nothing
 		} else if (( .5 * earth.G * ( Math.sin(a) - (cof * Math.cos(a))  ) * Math.pow(T,2)   ) < L) {
 			//accelerate particle down plane, i.e. increase distance from starting point
-			p = (float) (.5 * earth.G * ( Math.sin(a) - (cof * Math.cos(a))  ) * Math.pow(T,2));
+			p = (double) (.5 * earth.G * ( Math.sin(a) - (cof * Math.cos(a))  ) * Math.pow(T,2));
 		} else {
 			p = L; //put particle (constantly) at the end of the plane
 		}
 		return p; //distance down plane		
 	}
 	
-	public float physicalTime() {
-		//float acc = earth.G * ( Math.sin(a) - (cof * Math.cos(a)));
-		float pTime = (float) Math.sqrt((2 * L)/(a));
+	public double physicalTime() {
+		//double acc = earth.G * ( Math.sin(a) - (cof * Math.cos(a)));
+		double pTime = (double) Math.sqrt((2 * L)/(a));
 		return pTime;		
 	}
 	
 	public void run() {
 			
-		float dt = (float) .1; //a "second"	
+		double dt = (double) .1; //a "second"	
 
 		//This "true" boolean is used to loop the section indefinitely
 		while (true) {
@@ -371,7 +373,7 @@ public class Friction extends Canvas implements Runnable {
 					
 					x = (int)( posUtah(earth.t) * Math.cos(a));
 					y = (int)( posUtah(earth.t) * Math.sin(a));
-					mv = (float) Math.sqrt(2 * earth.G * y);
+					mv = (double) Math.sqrt(2 * earth.G * y);
 					
 					//x = (int)(pos(t) * Math.cos(a));
 					//y = (int)(pos(t) * Math.sin(a));		
@@ -387,21 +389,21 @@ public class Friction extends Canvas implements Runnable {
 		}
 	}	
 	
-	public void setD (float M) { //use mass to set diameter
+	public void setD (double M) { //use mass to set diameter
 		d = (int) ((M < 500) ? M : 50);
 	}
 	
-	public void setA (float A) {
-		float aTemp = ((A < 90) && (A > 0)) ? A : 45;
-		a = (float) (Math.PI/180) * aTemp;	//conversion		
+	public void setA (double A) {
+		double aTemp = ((A < 90) && (A > 0)) ? A : 45;
+		a = (double) (Math.PI/180) * aTemp;	//conversion		
 	}	
 	
-	public void setC (float C) {
-		float cTemp = (float) 0.5;
+	public void setC (double C) {
+		double cTemp = (double) 0.5;
 		if ((C < 1) && (C > 0)) {
 			cTemp = C;
 		} else {			
-			cTemp = (float) 0.5;
+			cTemp = (double) 0.5;
 		}
 		cof = cTemp;
 	}
@@ -419,7 +421,7 @@ public class Friction extends Canvas implements Runnable {
 		JOptionPane.showMessageDialog(null, a + "\n" + b + "\n" + c);
 	}
 	
-	public int valueChecker(float m, float a, float c) {
+	public int valueChecker(double m, double a, double c) {
 		int check = 0; 
 		
 		/*-----------------------
@@ -452,11 +454,11 @@ public class Friction extends Canvas implements Runnable {
 		//-------------------FORCES-----------------------------//
 		
 		//friction up plane - capital "F" denotes 'Force'
-		float upF = (float) (cof * m * earth.G * Math.cos(a)); 
+		double upF = (double) (cof * m * earth.G * Math.cos(a)); 
 		String upStr = twoDecPlaces.format(upF); //round to two decimal places
 		
 		//weight down plane
-		float downF = (float) (m * earth.G * Math.sin(a));
+		double downF = (double) (m * earth.G * Math.sin(a));
 		String downStr = twoDecPlaces.format(downF); //round to two decimal places
 		
 		//friction vector components 
@@ -475,8 +477,8 @@ public class Friction extends Canvas implements Runnable {
 		}
 		
 		//acceleration
-		float accTemp = (downF - upF)/m; //acceleration used for conditional statement below...
-		float acc = (float) (moreForceUpPlane? 0.00 : accTemp); //is there more force up the plane? return 0 else return tempAcc
+		double accTemp = (downF - upF)/m; //acceleration used for conditional statement below...
+		double acc = moreForceUpPlane? 0.00 : accTemp; //is there more force up the plane? return 0 else return tempAcc
 		
 		String accStr = (absAcc == 0) ? "0.00" : twoDecPlaces.format(absAcc) ;
 		absAcc = Math.abs(acc); //absolute value - negative accelerations are not of any use here
@@ -543,11 +545,11 @@ public class Friction extends Canvas implements Runnable {
 		
 		//finally, display properties of movement
 		g.setColor(Color.CYAN);
-		g.drawString("Length of plane			: " + L + "m", textX, textY);
-		g.drawString("(Frictional) force up plane	: " + upStr + " N", textX, textY + 15);
-		g.drawString("(Weight) force down plane			: " + downStr + " N", textX, textY + 30);
+		g.drawString("Length of plane: " + L + "m", textX, textY);
+		g.drawString("(Frictional) force up plane: " + upStr + " N", textX, textY + 15);
+		g.drawString("(Weight) force down plane: " + downStr + " N", textX, textY + 30);
 		g.drawString("Acceleration: " + accStr + " m/s/s", textX, textY + 45);
-		g.drawString("Velocity					: " + vStr + " m/s", textX, textY + 60); //increments of 15 px for even spacing
+		g.drawString("Velocity: " + vStr + " m/s", textX, textY + 60); //increments of 15 px for even spacing
 	}
 	
 	public static void main(String args[]) {

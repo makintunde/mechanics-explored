@@ -10,16 +10,13 @@ import javax.swing.*;
 /*
  * Mechanics Explored - Front End
  * Copyright (R) Michael Akintunde 2013
- * 
- * Latest updates: 06/01/13 (deprecated "Assess" button, adding about text)
- * 							(Added ToolTip text, depending on simulation selected)
  */
 
+@SuppressWarnings("serial")
 public class FrontEnd extends JFrame /*implements ActionListener, ItemListener*/ {
-	private ImageIcon MechImage; //The main image to display
-	private JLabel label1; 
+	
 	public int simChoice = 1; 
-	/*1 = Projectile
+	/* 1 = Projectile
 	 * 2 = Friction
 	 * 3 = Restitution
 	 */
@@ -29,7 +26,7 @@ public class FrontEnd extends JFrame /*implements ActionListener, ItemListener*/
 	JButton aboutBtn = new JButton("About");
 	JButton beginBtn = new JButton("Begin");
 	JButton quitBtn = new JButton("Quit");	
-	JComboBox sims = new JComboBox();
+	JComboBox<String> sims = new JComboBox<String>();
 	JLabel image1;
 	public String name = "Mechanics Explored"; //used for setting "about" text
 	
@@ -65,7 +62,7 @@ public class FrontEnd extends JFrame /*implements ActionListener, ItemListener*/
 		JPanel row2 = new JPanel();
 		row2.setLayout(layout1);	
 		row2.add(instructions);
-		final JComboBox sims = new JComboBox(comboBoxStrings); 	
+		final JComboBox<String> sims = new JComboBox<String>(comboBoxStrings); 	
 		sims.setSelectedIndex(0); //sets default value to "-------" prompting user to select an simulation
 		row2.add(sims);
 		sims.addItemListener(new ItemListener() {
@@ -117,18 +114,18 @@ public class FrontEnd extends JFrame /*implements ActionListener, ItemListener*/
 		beginBtn.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 				switch (simChoice) {
-				case 1:					
-					new Projectile2();
-					updateLabel("front.png"); // revert back to default image
-				break;
-				case 2:					
-					new Friction();
-					updateLabel("front.png"); // revert back to default image
-				break;
-				case 3:									
-					new Restitution();
-					updateLabel("front.png"); // revert back to default image
-				break;
+					case 1:					
+						new Projectile();
+						updateLabel("front.png"); // revert back to default image
+						break;
+					case 2:					
+						new Friction();
+						updateLabel("front.png"); // revert back to default image
+						break;
+					case 3:									
+						new Restitution();
+						updateLabel("front.png"); // revert back to default image
+						break;
 				}
 			}
 		});
@@ -163,8 +160,7 @@ public class FrontEnd extends JFrame /*implements ActionListener, ItemListener*/
 	     }
 	 }
 	
-	public static void main(String args[]) {
-		
+	public static void main(String args[]) {		
 		FrontEnd gui = new FrontEnd();
 		gui.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		gui.setVisible(true);

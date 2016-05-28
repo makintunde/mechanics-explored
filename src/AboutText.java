@@ -1,14 +1,9 @@
 import java.awt.BorderLayout;
 import java.awt.Dimension;
-import javax.swing.JEditorPane;
 import javax.swing.JFrame;
-import javax.swing.JLabel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.SwingUtilities;
-import javax.swing.text.Document;
-import javax.swing.text.html.HTMLEditorKit;
-import javax.swing.text.html.StyleSheet;
 
 public class AboutText {
 	
@@ -21,9 +16,9 @@ public class AboutText {
 		SwingUtilities.invokeLater(new Runnable() {
 			public void run() {
       
-				// create a jtextarea
 				JTextArea textArea = new JTextArea();
 		        String aboutStr = null;
+		        
 		        // add text to it; we want to make it scroll
 		        if (n.equals("Mechanics Explored")) {
 		        	aboutStr = "Welcome to Mechanics Explored.\n\n " +

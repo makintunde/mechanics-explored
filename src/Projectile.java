@@ -1,41 +1,32 @@
 import java.awt.*;
 import java.awt.event.*;
-import java.text.DecimalFormat;
 import javax.swing.JOptionPane;
 
 /*
  * Mechanics Explored - Projectile
- * Copyright (R) Michael Akintunde 2013
- * 
- * Latest updates: 11/03/13 
- * 	-	added "about" text function
- * 	-	changing data types from "double" to "double"
- *  -	Commenting clean-up
- *  -	complete OOP revamp e.g. particle and planet class
- * 								
+ * Copyright (R) Michael Akintunde 2013 * 								
  */
 
-public class Projectile2 extends Canvas implements Runnable {	
+@SuppressWarnings("serial")
+public class Projectile extends Canvas implements Runnable {	
 	
-	Planet earth = new Planet((float) 9.8);
+	Planet earth = new Planet(9.8);
 	pParticle p = new pParticle();
 	
-	//check simulation is running, or is paused
+	// Check simulation is running, or is paused
 	public boolean running = false;
 	public boolean paused = false;
 	
-	//these must be public as they are used by internal methods
 	public Label heightLabel;
 	public TextField angleField;
 	public TextField velField;
 	
 	public String name = "Projectile"; //used for "About" text
 	
-	//constructor
-	Projectile2() {		
+	Projectile() {		
 		//housekeeping methods
-		setSize(earth.x, earth.y); // Set size of canvas to the predefined coodrinates
-		final Frame pictureFrame = new Frame("Projectile Simulation"); // Make a new frame, with title "Projectile Simulation"	
+		setSize(earth.x, earth.y); 
+		final Frame pictureFrame = new Frame("Projectile Simulation"); 
 		Panel canvasPanel = new Panel(); // Create new panel
 		canvasPanel.add(this); // Add panel
 		canvasPanel.setBackground(Color.BLACK); // Set background colour to black
@@ -80,7 +71,7 @@ public class Projectile2 extends Canvas implements Runnable {
 		//add items to menu
 		menu.add("Menu");
 		menu.add("Help");
-		menu.add("About"); //######
+		menu.add("About"); 
 		menu.add("Quit");
 		
 		pictureFrame.add(controlPanel, BorderLayout.SOUTH);	//add control panel to the south
@@ -103,10 +94,10 @@ public class Projectile2 extends Canvas implements Runnable {
 				try {
 					
 					// Java works in radians for Math class - so conversion needed
-					p.a = (float)convertToRadians(getTextFrom(angleField));
+					p.a = convertToRadians(getTextFrom(angleField));
 					
 					// Convert the user's input for velocity into a value of the "double" datatype
-					p.mVel = (float)getTextFrom(velField);	
+					p.mVel = getTextFrom(velField);	
 					
 					p.initY = earth.y - (int) getTextFrom(heightField);		
 					
@@ -188,8 +179,8 @@ public class Projectile2 extends Canvas implements Runnable {
 	
 	public void run() {	
 		
-		float dt = (float) 0.02; //a "second"	
-		float ay = -earth.G;
+		double dt = 0.02; //a "second"	
+		double ay = -earth.G;
 		//This "true" boolean is used to loop the section indefinitely
 		while (true) {
 			if (running && (p.y < earth.y - 30)) { //we do not want ball to fall below canvas's bottom
@@ -250,14 +241,16 @@ public class Projectile2 extends Canvas implements Runnable {
 		
 		//velocity vector
 		g.setColor(Color.MAGENTA);
-		g.drawLine((int)p.x + 2, (int)p.y + 5, (int)(p.x + p.mVel * Math.cos(p.a)), (int)(p.y - (p.mVel * Math.sin(p.a)) + (earth.G * earth.t)));
-		g.drawLine((int)p.x + 2, (int)p.y + 15, (int)(p.x + p.mVel * Math.cos(p.a)), (int)(p.y - (p.mVel * Math.sin(p.a)) + (earth.G * earth.t)));
+		g.drawLine((int)p.x + 2, (int)p.y + 5, (int)(p.x + p.mVel * Math.cos(p.a)), 
+				(int)(p.y - (p.mVel * Math.sin(p.a)) + (earth.G * earth.t)));
+		g.drawLine((int)p.x + 2, (int)p.y + 15, (int)(p.x + p.mVel * Math.cos(p.a)), 
+				(int)(p.y - (p.mVel * Math.sin(p.a)) + (earth.G * earth.t)));
 				
 		//parameters
 		
-		float vX = (float)(p.mVel * Math.cos(p.a));
+		double vX = p.mVel * Math.cos(p.a);
 		String vXStr = p.xVelStr(vX);
-		float vY = (float)((p.mVel * Math.sin(p.a)) - (earth.G * earth.t));
+		double vY = (p.mVel * Math.sin(p.a)) - (earth.G * earth.t);
 		String vYStr = p.yVelStr(vY);
 		
 		
@@ -278,6 +271,6 @@ public class Projectile2 extends Canvas implements Runnable {
 	
 	public static void main(String args[]) {
 		//create new AnimationObject
-		new Projectile2();		
+		new Projectile();		
 	}
 }

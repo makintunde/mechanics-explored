@@ -1,5 +1,7 @@
-import java.text.DecimalFormat;
-
+/*
+ * Mechanics Explored - rParticle
+ * Copyright (R) Michael Akintunde 2013 * 								
+ */
 
 public class rParticle extends Particle {
 	
@@ -9,9 +11,7 @@ public class rParticle extends Particle {
 	public float u = 0;	
 	public float v = 0;
 	public String colour;
-	
-	//~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~		
-	
+		
 	public int yMid() {
 		return (int) ( (earth.y - m) / 2 );		
 	}	
@@ -73,8 +73,6 @@ public class rParticle extends Particle {
 			u = (float) (((x > -100) && (x < -5)) ? x : -10); 
 		}
 	}
-	
-	
 	
 }
 
