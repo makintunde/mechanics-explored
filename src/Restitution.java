@@ -1,44 +1,42 @@
 import java.awt.*;
 import java.awt.event.*;
 import java.util.Timer;
+import static java.lang.Double.parseDouble;
 
 import javax.swing.JOptionPane;
 
 /*
  * Mechanics Explored - Restitution
- * Copyright (R) Michael Akintunde 2013 								
+ * Copyright (R) Michael Akintunde 2013
  */
 
 @SuppressWarnings("serial")
 public class Restitution extends Canvas implements Runnable {
-			
+
 	//create a new planet with its own gravity and time.
 	//parameter sets gravity to 9.8, even though it will make no difference to
 	//simulation's output (velocity is constant during particle's motion)
-	Planet earth = new Planet((float) 9.8);
+	Planet earth = new Planet(9.8);
 
 	//create two new particles
-	rParticle p[]= {
+	rParticle p[] = {
 			new rParticle(), //first...
-			new rParticle(),  //..and second
+			new rParticle()  //..and second
 	};
-	
-	float cor = 0;
-		
+
+	double cor = 0;
+
 	private static final int UPDATE_RATE = 30; //milliseconds
 
-    //check simulation is running, or is paused
-    public boolean running = false;
-    public boolean paused = false;
+  //check simulation is running, or is paused
+  public boolean running, paused;
 
-    //these must be public as they are used by internal methods
-    public Label corLabel;
-    public TextField velField1;
-    public TextField velField2;
-    public TextField massField1;
-	public TextField massField2;
+  //these must be public as they are used by internal methods
+  public Label corLabel;
+  public TextField velField1, velField2, massField1, massField2;
+
 	Timer timer = new Timer(); // <--- find out how to get to work?
-        
+
 	public String name = "Restitution";
 
 	//constructor
@@ -103,49 +101,49 @@ public class Restitution extends Canvas implements Runnable {
 		pictureFrame.setVisible(true); //we would like to see the simulation in action
 
 		//find out whether user closes window
-		pictureFrame.addWindowListener(new WindowAdapter() { 
+		pictureFrame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
-				pictureFrame.setVisible(false);        				
+				pictureFrame.setVisible(false);
 			}
-		});	
+		});
 
 		//find out whether user clicks "Start"
 		startButton.addActionListener(new ActionListener() {
-			public void actionPerformed(ActionEvent ev) {    		
+			public void actionPerformed(ActionEvent ev) {
 				System.out.println("Start button clicked.");
-                        		
+
 				try {
-                        			
+
 					//get coefficient of restitution from user's input
-					cor = Float.parseFloat(corField.getText());
+					cor = parseDouble(corField.getText());
 					setR(cor); //validate the coefficient of restitution
-					
+
 
 					//get values for velocities and masses
-					p[0].u = Float.parseFloat(velField1.getText());
-					p[1].u = -Float.parseFloat(velField2.getText());
-					p[0].m = (int)Float.parseFloat(massField1.getText());
-					p[1].m = (int)Float.parseFloat(massField2.getText()); 
-					
+					p[0].u = parseDouble(velField1.getText());
+					p[1].u = -parseDouble(velField2.getText());
+					p[0].m = (int) parseDouble(massField1.getText());
+					p[1].m = (int) parseDouble(massField2.getText());
+
 					//setting up positions and validating input values
-					for (int i = 0; i <= 1; i++) {
+					for (int i = 0; i < 2; i++) {
 						boolean dir = ((i == 0)? false : true); //true = (<----), false = (---->)
 						//if we are on the first particle, set its direction to (<----). If on second, dir = (---->)
 						p[i].setU(p[i].u, dir);
 						p[i].setM(p[i].m);
 						p[i].setInitPos(i + 1);
 					}
-                        			
+
 				} catch (NumberFormatException ne2) {
-					showErrorMessage();                        			
+					showErrorMessage();
 					return;
 				}
 
 				running = true; //simulation is now running
-                                
-				if (!paused) {        
+
+				if (!paused) {
 					startButton.setEnabled(false); //de-activate the start button when it already has been clicked on
-                                	
+
 				}
 				//"un-pause" simulation
 				paused = false;
@@ -158,7 +156,7 @@ public class Restitution extends Canvas implements Runnable {
 				startButton.setEnabled(true);
 				System.out.println("Stop button clicked.");
 				running = false; //simulation is not running anymore
-				//cor = (int)(Double.parseDouble(corField.getText()));
+				//cor = (int)(parseDouble(corField.getText()));
 				//reset variables
 				for (int i = 0; i < 2; i++) {
 					p[i].resetVars();
@@ -170,11 +168,11 @@ public class Restitution extends Canvas implements Runnable {
 		//find out whether user clicks "Pause"
 		pauseButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent even) {
-                        	
+
 				//simulation is not running, but is now paused
 				startButton.setEnabled(true); //re-activate the start button to re-play
 				System.out.println("Pause button clicked.");
-                        		
+
 				running = false;
 				paused = true;
 			}
@@ -184,7 +182,7 @@ public class Restitution extends Canvas implements Runnable {
 		menu.addItemListener(new ItemListener() {
 			public void itemStateChanged(ItemEvent event) {
 				String c ;
-				c =  (String) menu.getSelectedItem();          
+				c =  (String) menu.getSelectedItem();
 				if (c == "Quit") {
 					pictureFrame.setVisible(false);
 					c = "";
@@ -200,31 +198,31 @@ public class Restitution extends Canvas implements Runnable {
 		myThread.start(); //start thread
 		System.out.println("Restitution simuation started"); //is printed on console window, as a confirmation
 	}
-        
+
 	public void showErrorMessage() {
 		JOptionPane.showMessageDialog(null, "Only numerical values are accepted.");
 	}
-        
+
 	public void displayAboutText(String n) {
 		new AboutText(n);
 	}
-        
+
 	public void setDialog(String s) {
 		JOptionPane.showMessageDialog(null, s);
 	}
-        
+
 	//Calculates new velocity of particle after collision with other particle
-	public float changeVel1(rParticle a, rParticle b, float e) {
-		float v = ( (a.m * a.u) + (b.m * b.u) + (b.m * e)*(b.u - a.u) ) / (a.m + b.m);
+	public double changeVel1(rParticle a, rParticle b, double e) {
+		double v = ( (a.m * a.u) + (b.m * b.u) + (b.m * e)*(b.u - a.u) ) / (a.m + b.m);
 	return v;
 	}
-    
+
 	//Calculates new velocity of particle after collision with other particle
-	public float changeVel2(rParticle a, rParticle b, float e) {
-		float v = ( (a.m * a.u) + (b.m * b.u) + (a.m * e)*(a.u - b.u) ) / (a.m + b.m);
+	public double changeVel2(rParticle a, rParticle b, double e) {
+		double v = ( (a.m * a.u) + (b.m * b.u) + (a.m * e)*(a.u - b.u) ) / (a.m + b.m);
 	return v;
-	}   
-	
+	}
+
 	//collision between particle a and b?
 	public boolean collision(rParticle a, rParticle b) {
 		if ( (a.x + a.m) > b.x ) {
@@ -233,7 +231,7 @@ public class Restitution extends Canvas implements Runnable {
 			return false;
 		}
 	}
-	
+
 	//collision with left wall?
 	public boolean collLeftWall(rParticle a) {
 		if ( a.x < 0) {
@@ -242,7 +240,7 @@ public class Restitution extends Canvas implements Runnable {
 			return false;
 		}
 	}
-	
+
 	//collision with right wall?
 	public boolean collRightWall(rParticle b) {
 		if ( (b.x + b.m) > earth.x ) {
@@ -257,49 +255,49 @@ public class Restitution extends Canvas implements Runnable {
 		//This "true" boolean is used to loop the section indefinitely
 		while (true) {
 			if (running) {
-                        	
+
 				p[0].x += p[0].u;
 				p[1].x += p[1].u;
-                        	
+
 				if (collLeftWall(p[0])) {
-					p[0].u = wallBouncedVel(p[0].u, cor); //bounce ball and change velocity, 
+					p[0].u = wallBouncedVel(p[0].u, cor); //bounce ball and change velocity,
 													  //for particle a
 					p[0].x = 1; //reposition ball
 				} else if (collRightWall(p[1])) {
-					p[1].u = wallBouncedVel(p[1].u, cor); //bounce ball and change velocity, 
+					p[1].u = wallBouncedVel(p[1].u, cor); //bounce ball and change velocity,
 													   //for particle b
 					p[1].x = earth.x - p[1].m; //to reduce errors
-				} 
+				}
 				if (collision(p[0], p[1])) { //if there's a collision between particle and b...
-					float uTemp1 = changeVel1(p[0],p[1], cor); //change their velocities...
-					float uTemp2 = changeVel2(p[0],p[1], cor); //according to value of "cor"                   		
-					p[0].u = uTemp1;   
+					double uTemp1 = changeVel1(p[0],p[1], cor); //change their velocities...
+					double uTemp2 = changeVel2(p[0],p[1], cor); //according to value of "cor"
+					p[0].u = uTemp1;
 					p[1].u = uTemp2;
-					p[0].x = p[1].x - p[0].m;  //move particle far away from each other to avoid setting of any errors                      		
-				}  
-                        	
-				//paint items again                    	 	
-				repaint();                         	 	
-                        	
+					p[0].x = p[1].x - p[0].m;  //move particle far away from each other to avoid setting of any errors
+				}
+
+				//paint items again
+				repaint();
+
 			}
-			try {Thread.sleep(UPDATE_RATE);} catch (InterruptedException e){} //wait for 30 milliseconds			
-			
+			try {Thread.sleep(UPDATE_RATE);} catch (InterruptedException e){} //wait for 30 milliseconds
+
 		}
 	}
-        
+
 	//find velocity of particle after collision with wall
-	public float wallBouncedVel (float v, float e) {        	
-		float vTemp;        	
+	public double wallBouncedVel (double v, double e) {
+		double vTemp;
 		vTemp = -e * v;
 		return vTemp;
 	}
-	
+
 	//set coefficient of restitution
-	public void setR (float R) {
-		float rTemp =  (float) (((R < 1) && (R > 0)) ? R : 0.5);
+	public void setR (double R) {
+		double rTemp =  ((R < 1) && (R > 0)) ? R : 0.5;
 		cor = rTemp;
 	}
-        
+
 	//used to set the appropriate format for the energy string in parameter output area
 	public String setEnergyString () {
 		String s = "";
@@ -307,15 +305,15 @@ public class Restitution extends Canvas implements Runnable {
 	}
 
 	public void paint(Graphics g) {
-        
+
 		//initial positions of text
 		int textY = 20;
-		int textX = 10;	
-		
+		int textX = 10;
+
 		//display properties of the simulation
 		//uses for loop in order to loop through particles and display
 		//respective particle's properties
-		
+
 		for (int i = 0; i <= 1; i++) {
 			g.setColor( ((i == 0) ?  Color.ORANGE : Color.RED) ); //either red or orange
 			//write out the particles' masses
@@ -324,18 +322,17 @@ public class Restitution extends Canvas implements Runnable {
 			//write out kinetic energies
 			g.drawString("Kinetic Energy (" + (i + 1) + "): " + p[i].getKineticEnergyStr(), textX, textY);
 			textY += 15; //space next line out by 15px again
-			g.fillOval((int)p[i].x, p[i].yMid(), p[i].m, p[i].m); //draw particle	
-		}  		
+			g.fillOval((int)p[i].x, p[i].yMid(), p[i].m, p[i].m); //draw particle
+		}
 		//coefficient of restitution text
 		g.setColor(Color.CYAN);
-		g.drawString("Coefficient of Restitution	: " + cor + "", textX, textY);          
-		
+		g.drawString("Coefficient of Restitution	: " + cor + "", textX, textY);
+
 	}
 
 	public static void main(String args[]) {
 		//create new rest() Object
 		new Restitution();
-		System.out.println("Restitution simulation started"); 	
+		System.out.println("Restitution simulation started");
 	}
 }
-

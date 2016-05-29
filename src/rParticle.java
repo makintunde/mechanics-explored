@@ -1,79 +1,72 @@
 /*
  * Mechanics Explored - rParticle
- * Copyright (R) Michael Akintunde 2013 * 								
+ * Copyright (R) Michael Akintunde 2013 *
  */
 
 public class rParticle extends Particle {
-	
+
 	public int m = 0;
-	public float x = 0;
-	public float y = 0;
-	public float u = 0;	
-	public float v = 0;
+	public double x = 0, y = 0, u = 0, v = 0;
 	public String colour;
-		
+
 	public int yMid() {
-		return (int) ( (earth.y - m) / 2 );		
-	}	
-	
-	public String convertTo2DP(float x) {
+		return (int) ( (earth.y - m) / 2 );
+	}
+
+	public String convertTo2DP(double x) {
 		return twoDecPlaces.format(x);
 	}
-	
+
 	public void resetVars() {
 		u = 0;
-		m = 0;		
+		m = 0;
 	}
-	
+
 	public String uStr() {
 		return twoDecPlaces.format(u);
 	}
-	
+
+	// Return a string displaying the kinetic energy of a particle.
 	public String getKineticEnergyStr() {
-		float e = (float) (0.5 * m * u * u);
-		String eStr = (e < 1000) ? twoDecPlaces.format(e) + " J" : twoDecPlaces.format(e/1000) + " KJ";    	
+		double e = 0.5 * m * u * u;
+		String unit = "J";
+
+		if (e > 1000) {
+			e /= 1000;
+			unit = "KJ";
+		}
+
+		String eStr = twoDecPlaces.format(e) + unit;
+
 		return eStr;
 	}
-	
+
 	public String getVelocityStr() {
 		return twoDecPlaces.format(u);
 	}
-	
+
+	// Position first particle at a distance of it's diameter
+	// Position second particle at two times its diameter away from right-hand
+	// side of canvas.
 	public void setInitPos(int p) {
-		//p = particle no.
-		switch (p) {
-		case 1 : 
-		//position first particle at a distance of it's diameter 
-		//away from left-hand side of canvas
-			x = m; 
-			break;
-		case 2 :
-		//position second particle at a distance of two multiples of it's
-		//diameter away from right-hand side of canvas, ensures minimum errors
-			x = earth.x - (2 * m);
-			break;
-		}
+		x = (p == 1 ? m : (earth.x - 2*m));
 	}
-	
-	//validate the velocity
-	public void setV(float x) {
-		
+
+	// Validate the mass of the particle to avoid it having too large of a
+	// diameter on-screen
+	public void setM (double m) {
+		m = (int) (m > 0 && m < 50 ? m : 10);
 	}
-	
-	//validate the mass of the particle to avoid it having too large of a diameter on-screen
-	public void setM (float M) { //use mass to set diameter
-		m = (int) (((M < 50) && (M > 0)) ? M : 10);
-	}
-	
-	//validate velocity of the particle to avoid any strange behaviour.
-	public void setU (float x, boolean right) { //boolean parameter checks whether a particle starts from right-hand side of screen
-		if (!right) {
-			u = (float) (((x < 100) && (x > 5)) ? x : 10); 			
+
+	// Validate velocity of the particle to avoid any strange behaviour.
+	// right parameter checks whether a particle starts from right-hand
+	// side of screen
+	public void setU (double x, boolean right) {
+		if (right) {
+			u = ((x > -100 && x < -5) ? x : -10);
 		} else {
-			u = (float) (((x > -100) && (x < -5)) ? x : -10); 
+			u = ((x < 100 && x > 5) ? x : 10);
 		}
 	}
-	
+
 }
-
-
