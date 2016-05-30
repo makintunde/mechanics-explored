@@ -4,6 +4,8 @@ import java.text.DecimalFormat; //For decimal formatting
 import javax.swing.BoxLayout;	//Layout manager
 import javax.swing.JOptionPane; //Used for dialogue boxes
 import static java.lang.Double.parseDouble;
+import java.util.Set;
+import java.util.HashSet;
 
 /*
  * Mechanics Explored - Friction
@@ -21,35 +23,34 @@ public class Friction extends Canvas implements Runnable {
 	DecimalFormat twoDecPlaces = new DecimalFormat("0.00");
 	Planet earth = new Planet(9.8);
 
-	public double ay = 0; 		// Y component of acceleration - x component is negligible since constant
-	public double vy = 0; 		// Y component of velocity
-	public double mv = 0; 		// Magnitude of velocity
+	public static enum errorType { MASS_ERR, ANG_ERR, COF_ERR, NONE };
+
+	public double ay = 0; 	   	// Y component of acceleration
+	public double vy = 0; 	   	// Y component of velocity
+	public double mv = 0; 		  // Magnitude of velocity
 	public double aRough = 0; 	// "Raw" angle value
-	public double acc = 0; 		// Acceleration
-	public double absAcc = 0;
+	public double acc = 0; 	  	// Acceleration
+	public double absAcc = 0;   // Magnitude of acceleration
 
 	//---------------IMPORTANT VARIBLES--------------------
 	public double cof = 0.5; 	// Coefficient of friction
-	public double a = 0;		// Angle of inclination
-	public double m = 0; 		// Mass
+	public double a = 0;	  	// Angle of inclination
+	public double m = 0; 	  	// Mass
 	//-----------------------------------------------------
 
-	public int L = 500; 		// Length of "plank"
-	public int d = 10; 		// Diameter of ball
+	public int L = 500; // Length of "plank"
+	public int d = 10; 	// Diameter of ball
 
 	// Initial position of ball
 	public int x = 0; // X-Coordinate
 	public int y = 0; // Y-Coordinate
 
-	// Used for checking if simulation is running/paused
-	public boolean running = false;
-	public boolean paused = false;
-	public boolean anyErrors = false;
+	// For checking if simulation is running/paused
+	public boolean running, paused, anyErrors;
 
 	// Labels and text fields used for
 	public Label cofLabel;
-	public TextField angleField;
-	public TextField velField;
+	public TextField angleField, velField;
 
 	// Used for displaying about text
 	public String name = "Friction";
@@ -58,7 +59,8 @@ public class Friction extends Canvas implements Runnable {
 	Friction() {
 		//housekeeping methods
 		setSize(earth.x,earth.y);
-		final Frame pictureFrame = new Frame("Friction Simulation"); //make a new frame, with title "Friction Simulation"
+		final Frame pictureFrame = new Frame("Friction Simulation");
+
 		Panel canvasPanel = new Panel(); //create new panel
 		canvasPanel.add(this); //add panel
 		canvasPanel.setBackground(Color.BLACK); //set background colour to black
@@ -79,14 +81,13 @@ public class Friction extends Canvas implements Runnable {
 		final TextField cofField = new TextField(5);
 		final TextField angleField = new TextField(5);
 		final TextField massField = new TextField(5);
-		//final TextField lengthField = new TextField(5);
 
 		//create labels for height, angle and velocity entry. and for the error panel
 		Label cofLabel = new Label("Enter coefficient of friction (mu):");
 		Label angleLabel = new Label("Enter angle (a):");
 		Label massLabel = new Label("Enter mass (kg):");
-		//Label lengthLabel = new Label("Enter plane length (m):");
-		final Label errorLabel = new Label("---------------------------Ready----------------------------"); //####################################
+    String dashes = "---------------------------";
+    Label errorLabel = new Label(dashes + "Ready" + dashes);
 
 		errorPanel.add(errorLabel);
 		errorPanel.setForeground(Color.RED);
@@ -98,8 +99,6 @@ public class Friction extends Canvas implements Runnable {
 		controlPanel.add(angleField);
 		controlPanel.add(massLabel);
 		controlPanel.add(massField);
-		//controlPanel.add(lengthLabel);
-		//controlPanel.add(lengthField);
 
 		//add control buttons
 		controlPanel.add(startButton);
@@ -117,20 +116,23 @@ public class Friction extends Canvas implements Runnable {
 		menu.add("About");
 		menu.add("Quit");
 
-		pictureFrame.add(bottomPanel, BorderLayout.SOUTH);	//add control panel to the south
-		pictureFrame.add(menu, BorderLayout.NORTH);	//add menu to the north
-		pictureFrame.pack();
-		pictureFrame.setVisible(true); //we would like to see the simulation in action
+		// Add control panel to the south
+		pictureFrame.add(bottomPanel, BorderLayout.SOUTH);
 
-		//find out whether user closes window
+		// Add menu to the north
+		pictureFrame.add(menu, BorderLayout.NORTH);
+
+		pictureFrame.pack();
+		pictureFrame.setVisible(true);
+
+		// Find out whether user closes window
 		pictureFrame.addWindowListener(new WindowAdapter() {
 			public void windowClosing(WindowEvent e) {
 				pictureFrame.setVisible(false);
 			}
 		});
 
-
-		//set text for the error label when start button is rolled over
+		// Set text for the error label when start button is rolled over
 		startButton.addMouseMotionListener(new MouseMotionListener() {
 			public void mouseMoved(MouseEvent e) {
 				errorLabel.setText("Click to start simulation.");
@@ -157,7 +159,7 @@ public class Friction extends Canvas implements Runnable {
 			}
 		});
 
-		//set text for the error label when pause button is rolled over
+		// Set text for the error label when pause button is rolled over
 		pauseButton.addMouseMotionListener(new MouseMotionListener() {
 			public void mouseMoved(MouseEvent eve) {
 				errorLabel.setText("Click to pause simulation.");
@@ -170,7 +172,7 @@ public class Friction extends Canvas implements Runnable {
 			}
 		});
 
-		//set text for the error label when canvas panel is rolled over
+		// Set text for the error label when canvas panel is rolled over
 		canvasPanel.addMouseMotionListener(new MouseMotionListener() {
 			public void mouseMoved(MouseEvent even) {
 				errorLabel.setText("Ready.");
@@ -202,94 +204,75 @@ public class Friction extends Canvas implements Runnable {
 		startButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent ev) {
 
-				String massErrStr 	= "Mass error.";
-				String massValStr 	= "Mass of " + m + " is not valid.";
-				String massRecStr 	= "Try a mass of 10kg.";
+				final String massErrStr	= "\nMass value invalid.\n" +
+																	"Try a mass of 10kg instead.\n";
 
-				String angleErrStr 	= "Angle error.";
-				String angleValStr 	= "Angle of " + a + " is not valid.";
-				String angleRecStr 	= "Try an angle of 45 degrees.";
+				final String angleErrStr = "\nAngle value invalid.\n" +
+																  "Try an angle of 45 degrees instead.\n";
 
-				String cofErrStr 	= "Friction coefficient error.";
-				String cofValStr 	= "Friction coefficient of " + cof + " is not valid.";
-				String cofRecStr	= "Try a friction coefficient of 0.5.";
+				final String cofErrStr = "\nFriction coefficient invalid.\n" +
+									               "Try a friction coefficient of 0.5 instead.\n";
+        String finalErrStr = "";
 
-				try{
-					//get coefficient of friction from user's input
+				try {
+					// Get coefficient of friction from user's input.
 					cof = parseDouble(cofField.getText());
 
-					//get "rough" angle
+					// Get "rough" angle.
 					aRough = parseDouble(angleField.getText());
 
-					//get mass from user's input value, use it as diameter of ball for visual representation
+					// Get mass from user's input value, use it as diameter of ball for
+					// visual representation.
 					m = parseDouble(massField.getText());
-				}
-				catch(NumberFormatException ne){
+				} catch(NumberFormatException ne){
 					JOptionPane.showMessageDialog(null, "Only numerical values are accepted.");
 					return;
 				}
 
-				//convert valid angle to radians, for Java's use
-				setA(aRough); //validates
+				// Convert valid angle to radians, for Java's use.
+				setA(aRough);
 
-				//we need a limit of the diameter of ball, so use this method
+				// We need a limit of the diameter of ball, so use this method.
 				setD(m);
 
-				//error checking
-				if ((	valueChecker(m, a, cof) == 1)
-					|| (valueChecker(m, a, cof) == 2)
-					|| (valueChecker(m, a, cof) == 3)) {
-					anyErrors = true;
-
-					//single errors
-					if (valueChecker(m, a, cof) == 1) {
-						setDialog(massErrStr, massValStr, massRecStr);
-					} if (valueChecker(m, a, cof) == 2) {
-						setDialog(angleErrStr, angleValStr, angleRecStr);
-					} if (valueChecker(m, a, cof) == 3) {
-						setDialog(cofErrStr, cofValStr, cofRecStr);
-
-					//double errors
-					} if ((valueChecker(m, a, cof) == 1) && (valueChecker(m, a, cof) == 2) && !(valueChecker(m, a, cof) == 3)) {
-						setDialog(massErrStr + "\n" + angleErrStr,
-								massValStr + "\n" + angleValStr,
-								massRecStr + "\n" + angleRecStr);
-					} if ((valueChecker(m, a, cof) == 1) && (valueChecker(m, a, cof) == 3) && !(valueChecker(m, a, cof) == 2)) {
-						setDialog(massErrStr + "\n" + cofErrStr,
-								massErrStr + "\n" + cofValStr,
-								massErrStr + "\n" + cofRecStr);
-					} if ((valueChecker(m, a, cof) == 2) && (valueChecker(m, a, cof) == 3) && !(valueChecker(m, a, cof) == 1)) {
-						setDialog(angleErrStr + "\n" + cofErrStr,
-								angleValStr + "\n" + cofValStr,
-								angleRecStr + "\n" + cofRecStr);
-
-					//triple error
-					} if ((valueChecker(m, a, cof) == 1)
-							&& (valueChecker(m, a, cof) == 2)
-							&& (valueChecker(m, a, cof) == 3)) {
-						setDialog(massErrStr + "\n" + angleErrStr + "\n" + cofErrStr,
-								massValStr + "\n" + angleValStr + "\n" + cofValStr,
-								massRecStr + "\n" + angleRecStr + "\n" + cofRecStr);
-					}
-				} else {
-					anyErrors = false; //there are not any errors
+				// Error checking
+				Set<errorType> checkedValues = valueChecker(m, aRough, cof);
+				anyErrors = !checkedValues.isEmpty();
+        System.out.println(checkedValues.size());
+				if (anyErrors) {
+          for (errorType t : checkedValues) {
+            switch (t) {
+              case MASS_ERR:
+                finalErrStr += massErrStr;
+                break;
+              case ANG_ERR:
+                finalErrStr += angleErrStr;
+                break;
+              case COF_ERR:
+                finalErrStr += cofErrStr;
+                break;
+            }
+          }
+          setDialog(finalErrStr);
 				}
 
 				if (!paused && !anyErrors) {
 
-					running = true; //simulation is now running
+					// Simulation is now running.
+					running = true;
 
-					startButton.setEnabled(false); //de-activate the start button when it already has been clicked on
+					// De-activate the start button when it already has been clicked on.
+					startButton.setEnabled(false);
 
-					errorLabel.setText("Simulation started."); //change text of errorPanel
+					// Change text of errorPanel.
+					errorLabel.setText("Simulation started.");
 
-					earth.t = 0; //reset time
+					earth.t = 0; // Reset time
 
 				} else {
 					paused = false;
 					startButton.setEnabled(true);
 				}
-				//simulation is not paused
 			}
 		});
 
@@ -297,9 +280,9 @@ public class Friction extends Canvas implements Runnable {
 		stopButton.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent eve) {
 				startButton.setEnabled(true);
-				errorLabel.setText("---------------------------Ready----------------------------");
+				String dashes = "---------------------------";
+				errorLabel.setText(dashes + "Ready" + dashes);
 				running = false; //simulation is not running anymore
-				//reset variables
 				resetVars();
 			}
 		});
@@ -331,7 +314,7 @@ public class Friction extends Canvas implements Runnable {
 
 		Thread myThread = new Thread(this); //create new thread
 		myThread.start(); //start thread
-		System.out.println("Friction simuation started"); //is printed on console window, as a confirmation
+		System.out.println("Friction simuation started");
 	}
 
 	//Display about text
@@ -342,18 +325,8 @@ public class Friction extends Canvas implements Runnable {
 	//used for calculation position of particle in the (x,y) plane
 	//named posUtah, as algorithm was inspired by University of Utah's description
 	public double posUtah (double T) {
-		double p = 0;
-		if (earth.t < 0) {
-			//do nothing
-		} else if ((cof * Math.cos(a)) > (Math.sin(a))) {
-			//do nothing
-		} else if (( .5 * earth.G * ( Math.sin(a) - (cof * Math.cos(a))  ) * Math.pow(T,2)   ) < L) {
-			//accelerate particle down plane, i.e. increase distance from starting point
-			p = .5 * earth.G * ( Math.sin(a) - (cof * Math.cos(a))  ) * Math.pow(T,2);
-		} else {
-			p = L; //put particle (constantly) at the end of the plane
-		}
-		return p; //distance down plane
+		double factor = 0.5 * earth.G * (Math.sin(a) - (cof * Math.cos(a))) * T*T;
+		return factor < L ? factor : L;
 	}
 
 	public double physicalTime() {
@@ -366,22 +339,18 @@ public class Friction extends Canvas implements Runnable {
 
 		double dt = .1; //a "second"
 
-		//This "true" boolean is used to loop the section indefinitely
 		while (true) {
 			if (running && (y < L * Math.sin(a))) {
-				for (int i = 0; i < 0.1/dt; i++) { //slows simulation down and reduces flickering
-
-					x = (int)( posUtah(earth.t) * Math.cos(a));
-					y = (int)( posUtah(earth.t) * Math.sin(a));
+				for (int i = 0; i < 0.1/dt; i++) {
+					//slows simulation down and reduces flickering
+					x = (int)(posUtah(earth.t) * Math.cos(a));
+					y = (int)(posUtah(earth.t) * Math.sin(a));
 					mv = Math.sqrt(2 * earth.G * y);
 
-					//x = (int)(pos(t) * Math.cos(a));
-					//y = (int)(pos(t) * Math.sin(a));
-
-					//increment time by "delta" t
+					// Increment time by "delta" t
 					earth.t += dt;
 				}
-				//paint items again
+				// Paint items again
 				repaint();
 			}
 
@@ -394,8 +363,7 @@ public class Friction extends Canvas implements Runnable {
 	}
 
 	public void setA (double A) {
-		double aTemp = ((A < 90) && (A > 0)) ? A : 45;
-		a = (Math.PI/180) * aTemp;	//conversion
+		a = Math.PI * A / 180;	//conversion
 	}
 
 	public void setC (double C) {
@@ -410,46 +378,47 @@ public class Friction extends Canvas implements Runnable {
 
 	public void resetVars() { //resets all variables
 		earth.t = 0;
-		ay = 0;
-		vy = 0;
-		x = 0;
-		y = 0;
-		acc = 0;
+    ay = 0;
+    vy = 0;
+    x = 0;
+    y = 0;
+    acc = 0;
 	}
 
-	public void setDialog(String a, String b, String c) {
-		JOptionPane.showMessageDialog(null, a + "\n" + b + "\n" + c);
+	public void setDialog(String str) {
+		JOptionPane.showMessageDialog(null, str);
 	}
 
-	public int valueChecker(double m, double a, double c) {
-		int check = 0;
+	public Set<errorType> valueChecker(double m, double a, double c) {
 
-		/*-----------------------
-		 * 1 = mass input error
-		 * 2 = angle input error
-		 * 3 = cof input error
-		 -----------------------*/
-		if (!((m < 500) && (m > 0))){ // if mass is not positive and not less than 500kg.
-			check = 1; //return a mass error
-		} else if (!((a < 90) && (a >= 0))) { //if angle is not positive and not less than 90 degrees
-			check = 2; //return an angle error
-		} else if (!((c <= 1) && (c >= 0))) { //if cof is not less than 1 and/or not positive
-			check = 3; //return a friction coefficient error
-		} else {
-			check = 0; //no errors found.
-		}
+    Set<errorType> errors = new HashSet<>();
 
-		return check;
-	}
+		if (!(m > 0 && m < 500)) { // if mass is not positive and not less than 500kg.
+      System.out.println("added mass err");
+			errors.add(errorType.MASS_ERR); //return a mass error
+    }
+    
+    System.out.println("a = " + a);
+	  if (!(a > 0 && a < 90)) { //if angle is not positive and not less than 90 degrees
+      System.out.println("added mass err");
+			errors.add(errorType.ANG_ERR); 
+    }
+	  if (!(c >= 0 && c <= 1)) { //if cof is not less than 1 and/or not positive
+      System.out.println("added mass err");
+			errors.add(errorType.COF_ERR); //return a friction coefficient error
+	  }
+
+    return errors;
+  }
 
 	public void paint(Graphics g) {
 
-		//middle coordinates of balls, used for position component lines
-		int midXCoordOfBall = x + (int)(d/2);
-		int midYCoordOfBall = y + (int)(d/2);
+		// Middle coordinates of balls, used for position component lines
+		int midXCoordOfBall = x + (int) (d/2);
+		int midYCoordOfBall = y + (int) (d/2);
 
-		int YPos = (int)( L * Math.sin(a) ); //Height of plank
-		int XPos = (int)( L * Math.cos(a) ); //Width of plank
+		int YPos = (int) (L * Math.sin(a)); // Height of plank
+		int XPos = (int) (L * Math.cos(a)); // Width of plank
 
 		//-------------------FORCES-----------------------------//
 
@@ -462,43 +431,41 @@ public class Friction extends Canvas implements Runnable {
 		String downStr = twoDecPlaces.format(downF); //round to two decimal places
 
 		//friction vector components
-		int upX = (int)( upF * Math.cos(a) ); //x component
-		int upY = (int)( upF * Math.sin(a) ); //y component
+		int upX = (int) (upF * Math.cos(a)); //x component
+		int upY = (int) (upF * Math.sin(a)); //y component
 
 		//-------------------FORCES-----------------------------//
 
-		//Acceleration
-		boolean moreForceUpPlane; //checks whether there is more force going up the plane
-		//Change moreForceUpPlane boolean variable subject to the following conditions:
+		// Acceleration
+		boolean moreForceUpPlane; // checks whether there is more force going up the plane
+		// Change moreForceUpPlane boolean variable subject to the following conditions:
 		if (upF > downF) {
 			moreForceUpPlane = true;
 		} else {
 			moreForceUpPlane = false;
 		}
 
-		//acceleration
-		double accTemp = (downF - upF)/m; //acceleration used for conditional statement below...
-		double acc = moreForceUpPlane? 0.00 : accTemp; //is there more force up the plane? return 0 else return tempAcc
+		// Acceleration
+		double accTemp = (downF - upF) / m;
+		double acc = moreForceUpPlane? 0.00 : accTemp;
 
 		String accStr = (absAcc == 0) ? "0.00" : twoDecPlaces.format(absAcc) ;
-		absAcc = Math.abs(acc); //absolute value - negative accelerations are not of any use here
+		absAcc = Math.abs(acc);
 
 		//velocity
 		String vStr = (mv == 0) ? "0.00" : twoDecPlaces.format(mv);
 
 		//weight vector components
-		int wX = (int)( downF * Math.cos(a)); //x component
-		int wY = (int)( downF * Math.sin(a)); //y component
+		int wX = (int) (downF * Math.cos(a)); //x component
+		int wY = (int) (downF * Math.sin(a)); //y component
 
 		int compLen = 10; //length of position components
 
-		int [] X = {0, 0, XPos}; //x coordinates of plank polygon
-		int [] Y = {0, YPos, YPos}; //y coordinates of plank polygon
+		int X[] = {0, 0, XPos}; //x coordinates of plank polygon
+		int Y[] = {0, YPos, YPos}; //y coordinates of plank polygon
 
 		int textX = earth.x - 200; //x coordinate of top line of text
 		int textY = 30;	//y coordinate of top line of text
-
-
 
 		//draw plank as polygon
 		g.setColor(Color.darkGray);
@@ -512,48 +479,34 @@ public class Friction extends Canvas implements Runnable {
 		g.drawLine(10, midYCoordOfBall, 10 + compLen, midYCoordOfBall);	//vertical component
 		g.drawLine(10, midYCoordOfBall + 2, 10 + compLen, midYCoordOfBall + 2);
 
-		//Coordinate axes
+		// Coordinate axes
 		g.setColor(Color.RED);
 		g.drawLine(0, (int) YPos, earth.x, (int) YPos); // "x" axis
 		g.drawLine(10, 0, 10, 10 + (int) YPos);	// "y" axis
 
-		//Force vectors
-		//µR i.e. Friction
+		// Force vectors
+		// µR i.e. Friction
 		g.setColor(Color.MAGENTA);
 		g.drawLine(midXCoordOfBall, midYCoordOfBall, midXCoordOfBall - upX, midYCoordOfBall - upY);
 
-		//Weight
+		// Weight.
 		g.setColor(Color.YELLOW);
 		g.drawLine(midXCoordOfBall, midYCoordOfBall, midXCoordOfBall + wX, midYCoordOfBall + wY);
 
-
-
-		/*draw plank as a line
-		g.setColor(Color.BLUE);
-		g.drawLine(0, 0, (int)(L * Math.cos(a)), (int)(L * Math.sin(a)));
-		g.drawLine(0, 0, (int)(L * Math.cos(a)), (int)(L * Math.sin(a)));
-		*/
-
-		/*for a thicker line...
-		 *  g.drawLine(midXCoordOfBall, midYCoordOfBall - (int)(d/2), midXCoordOfBall - fricX, midYCoordOfBall - fricY);
-		 *  g.drawLine(midXCoordOfBall, midYCoordOfBall - (int)(d/2), midXCoordOfBall + wX, midYCoordOfBall + wY);
-		 */
-
-		//draw particle
+		// Draw particle.
 		g.setColor( Color.ORANGE );
 		g.fillOval(x, y, d, d);	//where mass = d, and x and y coords are set in run() method
 
-		//finally, display properties of movement
+		// Finally, display properties of movement.
 		g.setColor(Color.CYAN);
 		g.drawString("Length of plane: " + L + "m", textX, textY);
 		g.drawString("(Frictional) force up plane: " + upStr + " N", textX, textY + 15);
 		g.drawString("(Weight) force down plane: " + downStr + " N", textX, textY + 30);
 		g.drawString("Acceleration: " + accStr + " m/s/s", textX, textY + 45);
-		g.drawString("Velocity: " + vStr + " m/s", textX, textY + 60); //increments of 15 px for even spacing
+		g.drawString("Velocity: " + vStr + " m/s", textX, textY + 60);
 	}
 
 	public static void main(String args[]) {
-		//create new Friction() Object
 		new Friction();
 	}
 
